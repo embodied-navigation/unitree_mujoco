@@ -24,6 +24,7 @@ inline struct SimulationConfig
     int print_scene_information;
 
     int enable_elastic_band;
+    double elastic_band_release_time;
     int band_attached_link = 0;
 
     void load_from_yaml(const std::string &filename)
@@ -41,6 +42,7 @@ inline struct SimulationConfig
             joystick_bits = cfg["joystick_bits"].as<int>();
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
+            elastic_band_release_time = cfg["elastic_band_release_time"].as<double>(-1.0);
         }
         catch(const std::exception& e)
         {

@@ -489,6 +489,14 @@ namespace
                 // elastic band on base link
                 if (param::config.enable_elastic_band == 1)
                 {
+                  if (elastic_band.enable_ &&
+                      param::config.elastic_band_release_time >= 0.0 &&
+                      d->time >= param::config.elastic_band_release_time)
+                  {
+                    elastic_band.enable_ = false;
+                    std::cout << "Elastic band automatically released at simulation time "
+                              << d->time << " s" << std::endl;
+                  }
                   if (elastic_band.enable_)
                   {
                     std::vector<double> x = {d->qpos[0], d->qpos[1], d->qpos[2]};
@@ -499,6 +507,12 @@ namespace
                     d->xfrc_applied[param::config.band_attached_link] = elastic_band.f_[0];
                     d->xfrc_applied[param::config.band_attached_link + 1] = elastic_band.f_[1];
                     d->xfrc_applied[param::config.band_attached_link + 2] = elastic_band.f_[2];
+                  }
+                  else
+                  {
+                    d->xfrc_applied[param::config.band_attached_link] = 0.0;
+                    d->xfrc_applied[param::config.band_attached_link + 1] = 0.0;
+                    d->xfrc_applied[param::config.band_attached_link + 2] = 0.0;
                   }
                 }
 
