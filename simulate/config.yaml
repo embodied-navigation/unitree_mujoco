@@ -9,7 +9,8 @@ joystick_type: "xbox" # support "xbox" and "switch" gamepad layout
 joystick_device: "/dev/input/js0" # Device path
 joystick_bits: 16 # Some game controllers may only have 8-bit accuracy
 
-print_scene_information: 1 # Print link, joint and sensors information of robot
+print_scene_information: 0 # Set to 1 when diagnosing model mappings
 
 enable_elastic_band: 1 # Virtual spring band, used for humanoid initialization
-elastic_band_release_time: 8.0 # Simulation seconds; negative disables automatic release
+elastic_band_release_time: 4.0 # Delay after first non-zero controller stiffness; negative disables
+metrics_output: "" # Optional directory for contacts.csv

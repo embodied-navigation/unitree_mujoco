@@ -25,6 +25,7 @@ inline struct SimulationConfig
 
     int enable_elastic_band;
     double elastic_band_release_time;
+    std::string metrics_output;
     int band_attached_link = 0;
 
     void load_from_yaml(const std::string &filename)
@@ -43,6 +44,7 @@ inline struct SimulationConfig
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
             elastic_band_release_time = cfg["elastic_band_release_time"].as<double>(-1.0);
+            metrics_output = cfg["metrics_output"].as<std::string>("");
         }
         catch(const std::exception& e)
         {
@@ -65,6 +67,7 @@ inline po::variables_map helper(int argc, char** argv)
         ("network,n", po::value<std::string>(&config.interface), "DDS network interface; -n eth0")
         ("robot,r", po::value<std::string>(&config.robot), "Robot type; -r go2")
         ("scene,s", po::value<std::filesystem::path>(&config.robot_scene), "Robot scene file; -s scene_terrain.xml")
+        ("metrics-output", po::value<std::string>(&config.metrics_output), "Directory for H2 contact metrics")
     ;
 
     po::variables_map vm;

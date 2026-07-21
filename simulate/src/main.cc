@@ -34,6 +34,7 @@
 #include "array_safety.h"
 #include "unitree_sdk2_bridge.h"
 #include "param.h"
+#include "h2_metrics.h"
 
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 #define NUM_MOTOR_IDL_GO 20
@@ -84,6 +85,8 @@ public:
   std::vector<double> f_ = {0, 0, 0};
 };
 inline ElasticBand elastic_band;
+inline H2ContactMetrics h2_contact_metrics;
+std::atomic_bool unitree_controller_active{false};
 
 
 namespace
@@ -489,9 +492,17 @@ namespace
                 // elastic band on base link
                 if (param::config.enable_elastic_band == 1)
                 {
+                  static double elastic_band_release_at = -1.0;
+                  if (elastic_band_release_at < 0.0 && unitree_controller_active &&
+                      param::config.elastic_band_release_time >= 0.0)
+                  {
+                    elastic_band_release_at = d->time + param::config.elastic_band_release_time;
+                    std::cout << "Elastic band release scheduled at simulation time "
+                              << elastic_band_release_at << " s" << std::endl;
+                  }
                   if (elastic_band.enable_ &&
-                      param::config.elastic_band_release_time >= 0.0 &&
-                      d->time >= param::config.elastic_band_release_time)
+                      elastic_band_release_at >= 0.0 &&
+                      d->time >= elastic_band_release_at)
                   {
                     elastic_band.enable_ = false;
                     std::cout << "Elastic band automatically released at simulation time "
@@ -518,6 +529,7 @@ namespace
 
                 // call mj_step
                 mj_step(m, d);
+                h2_contact_metrics.record(m, d);
                 stepped = true;
 
                 // break if reset
@@ -688,6 +700,7 @@ int main(int argc, char **argv)
   std::filesystem::path proj_dir = std::filesystem::path(getExecutableDir()).parent_path();
   param::config.load_from_yaml(proj_dir / "config.yaml");
   param::helper(argc, argv);
+  h2_contact_metrics.initialize(param::config.metrics_output);
   if(param::config.robot_scene.is_relative()) {
     param::config.robot_scene = proj_dir.parent_path() / "unitree_robots" / param::config.robot / param::config.robot_scene;
   }
