@@ -10,11 +10,15 @@
 #include <unitree/idl/hg/IMUState_.hpp>
 
 #include <iostream>
+#include <atomic>
+#include <cmath>
 
 #include "param.h"
 #include "physics_joystick.h"
 
 #define MOTOR_SENSOR_NUM 3
+
+extern std::atomic_bool unitree_controller_active;
 
 class UnitreeSDK2BridgeBase
 {
@@ -180,6 +184,7 @@ public:
             std::lock_guard<std::mutex> lock(lowcmd->mutex_);
             for(int i(0); i<num_motor_; i++) {
                 auto & m = lowcmd->msg_.motor_cmd()[i];
+                if (std::abs(m.kp()) > 1e-6F) unitree_controller_active = true;
                 mj_data_->ctrl[i] = m.tau() +
                                     m.kp() * (m.q() - mj_data_->sensordata[i]) +
                                     m.kd() * (m.dq() - mj_data_->sensordata[i + num_motor_]);

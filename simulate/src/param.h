@@ -24,6 +24,10 @@ inline struct SimulationConfig
     int print_scene_information;
 
     int enable_elastic_band;
+    double elastic_band_release_time;
+    double h2_elastic_band_stiffness;
+    double h2_elastic_band_damping;
+    std::string metrics_output;
     int band_attached_link = 0;
 
     void load_from_yaml(const std::string &filename)
@@ -41,6 +45,10 @@ inline struct SimulationConfig
             joystick_bits = cfg["joystick_bits"].as<int>();
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
+            elastic_band_release_time = cfg["elastic_band_release_time"].as<double>(-1.0);
+            h2_elastic_band_stiffness = cfg["h2_elastic_band_stiffness"].as<double>(400.0);
+            h2_elastic_band_damping = cfg["h2_elastic_band_damping"].as<double>(150.0);
+            metrics_output = cfg["metrics_output"].as<std::string>("");
         }
         catch(const std::exception& e)
         {
@@ -63,6 +71,7 @@ inline po::variables_map helper(int argc, char** argv)
         ("network,n", po::value<std::string>(&config.interface), "DDS network interface; -n eth0")
         ("robot,r", po::value<std::string>(&config.robot), "Robot type; -r go2")
         ("scene,s", po::value<std::filesystem::path>(&config.robot_scene), "Robot scene file; -s scene_terrain.xml")
+        ("metrics-output", po::value<std::string>(&config.metrics_output), "Directory for H2 contact metrics")
     ;
 
     po::variables_map vm;
