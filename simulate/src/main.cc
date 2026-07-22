@@ -700,6 +700,12 @@ int main(int argc, char **argv)
   std::filesystem::path proj_dir = std::filesystem::path(getExecutableDir()).parent_path();
   param::config.load_from_yaml(proj_dir / "config.yaml");
   param::helper(argc, argv);
+  if (param::config.robot == "h2") {
+    elastic_band.stiffness_ = param::config.h2_elastic_band_stiffness;
+    elastic_band.damping_ = param::config.h2_elastic_band_damping;
+    std::cout << "H2 elastic band: stiffness=" << elastic_band.stiffness_
+              << " N/m, damping=" << elastic_band.damping_ << " N*s/m" << std::endl;
+  }
   h2_contact_metrics.initialize(param::config.metrics_output);
   if(param::config.robot_scene.is_relative()) {
     param::config.robot_scene = proj_dir.parent_path() / "unitree_robots" / param::config.robot / param::config.robot_scene;

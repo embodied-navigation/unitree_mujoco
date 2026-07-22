@@ -25,6 +25,8 @@ inline struct SimulationConfig
 
     int enable_elastic_band;
     double elastic_band_release_time;
+    double h2_elastic_band_stiffness;
+    double h2_elastic_band_damping;
     std::string metrics_output;
     int band_attached_link = 0;
 
@@ -44,6 +46,8 @@ inline struct SimulationConfig
             print_scene_information = cfg["print_scene_information"].as<int>();
             enable_elastic_band = cfg["enable_elastic_band"].as<int>();
             elastic_band_release_time = cfg["elastic_band_release_time"].as<double>(-1.0);
+            h2_elastic_band_stiffness = cfg["h2_elastic_band_stiffness"].as<double>(400.0);
+            h2_elastic_band_damping = cfg["h2_elastic_band_damping"].as<double>(150.0);
             metrics_output = cfg["metrics_output"].as<std::string>("");
         }
         catch(const std::exception& e)
