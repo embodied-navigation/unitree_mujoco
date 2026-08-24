@@ -60,6 +60,7 @@ sudo make install
 ```
 cd unitree_mujoco/simulate/
 ln -s ~/.mujoco/mujoco-3.3.6 mujoco
+patch -d mujoco -p1 < patches/mujoco-3.3.6-managed-user-scene.patch
 ```
 
 ### 2. 编译 unitree_mujoco
@@ -143,13 +144,24 @@ domain_id: 1
 # 网卡名称, 对于仿真建议使用本地回环 "lo"
 interface: "lo"
 
+# 是否模拟无线手柄输入；keyboard 使用窗口键盘事件
+use_joystick: 1
+joystick_type: "keyboard" # "keyboard"、"xbox" 或 "switch"
+joystick_device: "/dev/input/js0" # keyboard 模式忽略
+joystick_bits: 16
+
 # 是否输出机器人连杆、关节、传感器等信息，1为输出
 print_scene_information: 1
 
 # 是否使用虚拟挂带, 1 为启用
 # 主要用于模拟 H1 机器人初始化挂起的过程 
 enable_elastic_band: 0 # For H1 
+
+# 显示 H2 足底接触支撑多边形及质心投影
+visualize_support_polygon: 1
 ```
+
+键盘模式映射：`Left Shift=L2`、`Right Shift=R2`、`Right Ctrl=R1`、方向键为 D-pad，`X/Y` 为对应按键，`W/S` 控制前后速度，`A/D` 控制转向。
 ### python 仿真器
 python 仿真器的配置文件位于 `/simulate_python/config.py` 中：
 ```python

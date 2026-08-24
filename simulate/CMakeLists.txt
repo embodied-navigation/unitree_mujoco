@@ -18,6 +18,7 @@ include_directories(
   /usr/local/include/iceoryx/v2.0.2
   mujoco/include
   mujoco/simulate
+  src
   src/lodepng
 )
 link_directories(mujoco/lib)
@@ -45,3 +46,19 @@ link_libraries(
 add_executable(unitree_mujoco ${SIM_SRC} src/main.cc)
 
 add_executable(jstest src/joystick/jstest.cc src/joystick/joystick.cc)
+
+enable_testing()
+add_executable(keyboard_joystick_test test/keyboard_joystick_test.cc)
+target_include_directories(keyboard_joystick_test PRIVATE src)
+target_compile_options(keyboard_joystick_test PRIVATE -UNDEBUG)
+add_test(NAME keyboard_joystick_test COMMAND keyboard_joystick_test)
+
+add_executable(support_polygon_test test/support_polygon_test.cc)
+target_include_directories(support_polygon_test PRIVATE src)
+target_compile_options(support_polygon_test PRIVATE -UNDEBUG)
+add_test(NAME support_polygon_test COMMAND support_polygon_test)
+
+add_executable(user_scene_utils_test test/user_scene_utils_test.cc)
+target_include_directories(user_scene_utils_test PRIVATE src mujoco/include)
+target_compile_options(user_scene_utils_test PRIVATE -UNDEBUG)
+add_test(NAME user_scene_utils_test COMMAND user_scene_utils_test)

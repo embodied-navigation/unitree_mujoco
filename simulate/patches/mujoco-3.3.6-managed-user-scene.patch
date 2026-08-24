@@ -1,0 +1,24 @@
+diff --git a/simulate/simulate.cc b/simulate/simulate.cc
+--- a/simulate/simulate.cc
++++ b/simulate/simulate.cc
+@@ -36,2 +36,3 @@
+ #include "platform_ui_adapter.h"
+ #include "array_safety.h"
++#include "user_scene_utils.h"
+@@ -2159,6 +2160,16 @@ void Simulate::Sync(bool state_only) {
+   // update scene or sync data from user in passive mode
+   if (!is_passive_) {
+     mjv_updateScene(m_, d_, &this->opt, &this->pert, &this->cam, mjCAT_ALL, &this->scn);
++
++    // Managed mode updates the render scene here, so append user geoms after
++    // mjv_updateScene replaces the scene contents.
++    if (user_scn) {
++      int ngeom = support_visualization::appendUserGeoms(
++          this->scn, user_scn->geoms, user_scn->ngeom);
++      if (ngeom < user_scn->ngeom) {
++        mj_warning(d_, mjWARN_VGEOMFULL, this->scn.maxgeom);
++      }
++    }
+   } else {
+     if (state_only) {
+       int state_size = mj_stateSize(m_, mjSTATE_INTEGRATION);

@@ -28,6 +28,7 @@ inline struct SimulationConfig
     double h2_elastic_band_stiffness;
     double h2_elastic_band_damping;
     std::string metrics_output;
+    bool visualize_support_polygon = false;
     int band_attached_link = 0;
 
     void load_from_yaml(const std::string &filename)
@@ -49,6 +50,8 @@ inline struct SimulationConfig
             h2_elastic_band_stiffness = cfg["h2_elastic_band_stiffness"].as<double>(400.0);
             h2_elastic_band_damping = cfg["h2_elastic_band_damping"].as<double>(150.0);
             metrics_output = cfg["metrics_output"].as<std::string>("");
+            visualize_support_polygon =
+                cfg["visualize_support_polygon"].as<bool>(false);
         }
         catch(const std::exception& e)
         {
@@ -72,6 +75,9 @@ inline po::variables_map helper(int argc, char** argv)
         ("robot,r", po::value<std::string>(&config.robot), "Robot type; -r go2")
         ("scene,s", po::value<std::filesystem::path>(&config.robot_scene), "Robot scene file; -s scene_terrain.xml")
         ("metrics-output", po::value<std::string>(&config.metrics_output), "Directory for H2 contact metrics")
+        ("support-polygon", po::bool_switch()->notifier([](bool enabled) {
+            if (enabled) config.visualize_support_polygon = true;
+        }), "Visualize H2 foot-contact support polygon and COM projection")
     ;
 
     po::variables_map vm;

@@ -3,6 +3,7 @@
 #include <iostream>
 #include <unitree/dds_wrapper/common/unitree_joystick.hpp>
 #include "joystick/joystick.h"
+#include "keyboard_joystick.h"
 #include <memory>
 
 
@@ -88,3 +89,5 @@ private:
 	std::unique_ptr<Joystick> js_;
 	int max_value_;
 };
+
+inline auto keyboard_joystick = std::make_shared<KeyboardJoystick>();
