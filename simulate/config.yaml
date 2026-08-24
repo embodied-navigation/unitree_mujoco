@@ -4,15 +4,18 @@ robot_scene: "scene.xml" # Robot scene, /unitree_robots/[robot]/scene.xml
 domain_id: 1  # Domain id
 interface: "lo" # Interface 
 
-use_joystick: 1 # Simulate Unitree WirelessController using a gamepad
-joystick_type: "xbox" # support "xbox" and "switch" gamepad layout
-joystick_device: "/dev/input/js0" # Device path
+use_joystick: 1 # Simulate Unitree WirelessController using a gamepad or keyboard
+joystick_type: "keyboard" # support "keyboard", "xbox", and "switch"
+joystick_device: "/dev/input/js0" # Device path; ignored for keyboard
 joystick_bits: 16 # Some game controllers may only have 8-bit accuracy
+# Keyboard: Left Shift=L2, Right Shift=R2, Right Ctrl=R1,
+# arrows=D-pad, X=X, Y=Y.
 
-print_scene_information: 0 # Set to 1 when diagnosing model mappings
+print_scene_information: 1 # Set to 1 when diagnosing model mappings
 
-enable_elastic_band: 1 # Virtual spring band, used for humanoid initialization
+enable_elastic_band: 1 # Virtual spring band for humanoid initialization
 elastic_band_release_time: -1.0 # Delay after first non-zero controller stiffness; negative disables
 h2_elastic_band_stiffness: 400.0 # N/m; H2 is about twice the mass of G1
 h2_elastic_band_damping: 150.0 # N*s/m; limits vertical oscillation while suspended
 metrics_output: "" # Optional directory for contacts.csv
+visualize_support_polygon: 1 # Read-only support polygon and COM overlay; CLI: --support-polygon

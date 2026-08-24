@@ -59,6 +59,7 @@ Download the mujoco [release](https://github.com/google-deepmind/mujoco/releases
 ```
 cd unitree_mujoco/simulate/
 ln -s ~/.mujoco/mujoco-3.3.6 mujoco
+patch -d mujoco -p1 < patches/mujoco-3.3.6-managed-user-scene.patch
 ```
 
 ### 2. Compile unitree_mujoco
@@ -136,9 +137,9 @@ robot_scene: "scene.xml"
 # DDS domain id, it is recommended to distinguish from the real robot (default is 0 on the real robot)
 domain_id: 1
 
-use_joystick: 1 # Simulate Unitree WirelessController using a gamepad
-joystick_type: "xbox" # support "xbox" and "switch" gamepad layout
-joystick_device: "/dev/input/js0" # Device path
+use_joystick: 1 # Simulate Unitree WirelessController using a gamepad or keyboard
+joystick_type: "keyboard" # support "keyboard", "xbox", and "switch"
+joystick_device: "/dev/input/js0" # ignored in keyboard mode
 joystick_bits: 16 # Some game controllers may only have 8-bit accuracy
 
 # Network interface name, for simulation, it is recommended to use the local loopback "lo"
@@ -148,7 +149,12 @@ print_scene_information: 1
 # Whether to use virtual tape, 1 to enable
 # Mainly used to simulate the hanging process of H1 robot initialization
 enable_elastic_band: 0 # For H1
+
+# Display the H2 foot-contact support polygon and COM projection
+visualize_support_polygon: 1
 ```
+
+Keyboard mapping: `Left Shift=L2`, `Right Shift=R2`, `Right Ctrl=R1`, arrow keys for the D-pad, `X/Y` for the matching buttons, `W/S` for forward/backward velocity, and `A/D` for turning.
 ### Python Simulator
 The configuration file for the Python simulator is located at `/simulate_python/config.py`:
 ```python

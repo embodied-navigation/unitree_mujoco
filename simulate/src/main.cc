@@ -35,6 +35,7 @@
 #include "unitree_sdk2_bridge.h"
 #include "param.h"
 #include "h2_metrics.h"
+#include "h2_support_polygon_visualizer.h"
 
 #define MUJOCO_PLUGIN_DIR "mujoco_plugin"
 #define NUM_MOTOR_IDL_GO 20
@@ -86,6 +87,9 @@ public:
 };
 inline ElasticBand elastic_band;
 inline H2ContactMetrics h2_contact_metrics;
+inline H2HeightLogger h2_height_logger;
+inline H2SupportPolygonVisualizer h2_support_polygon_visualizer;
+inline mjvScene h2_support_scene{};
 std::atomic_bool unitree_controller_active{false};
 
 
@@ -107,6 +111,19 @@ namespace
   mjtNum *ctrlnoise = nullptr;
 
   using Seconds = std::chrono::duration<double>;
+
+  void InitializeSupportPolygonVisualization(mj::Simulate& sim)
+  {
+    if (!param::config.visualize_support_polygon || param::config.robot != "h2")
+    {
+      sim.user_scn = nullptr;
+      return;
+    }
+    if (h2_support_scene.maxgeom > 0) mjv_freeScene(&h2_support_scene);
+    mjv_makeScene(m, &h2_support_scene, 64);
+    h2_support_polygon_visualizer.initialize(m, h2_support_scene);
+    sim.user_scn = &h2_support_scene;
+  }
 
   //---------------------------------------- plugin handling -----------------------------------------
 
@@ -359,6 +376,7 @@ namespace
           m = mnew;
           d = dnew;
           mj_forward(m, d);
+          InitializeSupportPolygonVisualization(sim);
 
           // allocate ctrlnoise
           free(ctrlnoise);
@@ -389,6 +407,7 @@ namespace
           m = mnew;
           d = dnew;
           mj_forward(m, d);
+          InitializeSupportPolygonVisualization(sim);
 
           // allocate ctrlnoise
           free(ctrlnoise);
@@ -530,6 +549,10 @@ namespace
                 // call mj_step
                 mj_step(m, d);
                 h2_contact_metrics.record(m, d);
+                if (param::config.robot == "h2")
+                {
+                  h2_height_logger.record(m, d);
+                }
                 stepped = true;
 
                 // break if reset
@@ -554,6 +577,15 @@ namespace
             mj_forward(m, d);
             sim.speed_changed = true;
           }
+
+          if (param::config.visualize_support_polygon && param::config.robot == "h2")
+          {
+            const std::string status = h2_support_polygon_visualizer.update(
+                m, d, h2_support_scene);
+            if (sim.user_texts_new_.empty())
+              sim.user_texts_new_.emplace_back(
+                  mjFONT_NORMAL, mjGRID_TOPLEFT, "H2 balance", status);
+          }
         }
       } // release std::lock_guard<std::mutex>
     }
@@ -575,6 +607,7 @@ void PhysicsThread(mj::Simulate *sim, const char *filename)
     {
       sim->Load(m, d, filename);
       mj_forward(m, d);
+      InitializeSupportPolygonVisualization(*sim);
 
       // allocate ctrlnoise
       free(ctrlnoise);
@@ -591,6 +624,7 @@ void PhysicsThread(mj::Simulate *sim, const char *filename)
 
   // delete everything we allocated
   free(ctrlnoise);
+  if (h2_support_scene.maxgeom > 0) mjv_freeScene(&h2_support_scene);
   mj_deleteData(d);
   mj_deleteModel(m);
 
@@ -646,14 +680,66 @@ __attribute__((used, visibility("default"))) extern "C" void _mj_rosettaError(co
 
 // user keyboard callback
 void user_key_cb(GLFWwindow* window, int key, int scancode, int act, int mods) {
+  if (param::config.use_joystick == 1 &&
+      param::config.joystick_type == "keyboard") {
+    const bool pressed = act != GLFW_RELEASE;
+    switch (key) {
+      case GLFW_KEY_LEFT_SHIFT:
+        keyboard_joystick->setKey(KeyboardKey::kLT, pressed);
+        break;
+      case GLFW_KEY_RIGHT_SHIFT:
+        keyboard_joystick->setKey(KeyboardKey::kRT, pressed);
+        break;
+      case GLFW_KEY_RIGHT_CONTROL:
+        keyboard_joystick->setKey(KeyboardKey::kRB, pressed);
+        break;
+      case GLFW_KEY_UP:
+        keyboard_joystick->setKey(KeyboardKey::kUp, pressed);
+        break;
+      case GLFW_KEY_DOWN:
+        keyboard_joystick->setKey(KeyboardKey::kDown, pressed);
+        break;
+      case GLFW_KEY_LEFT:
+        keyboard_joystick->setKey(KeyboardKey::kLeft, pressed);
+        break;
+      case GLFW_KEY_RIGHT:
+        keyboard_joystick->setKey(KeyboardKey::kRight, pressed);
+        break;
+      case GLFW_KEY_Y:
+        keyboard_joystick->setKey(KeyboardKey::kY, pressed);
+        break;
+      case GLFW_KEY_X:
+        keyboard_joystick->setKey(KeyboardKey::kX, pressed);
+        break;
+      case GLFW_KEY_W:
+        keyboard_joystick->setKey(KeyboardKey::kW, pressed);
+        break;
+      case GLFW_KEY_S:
+        keyboard_joystick->setKey(KeyboardKey::kS, pressed);
+        break;
+      case GLFW_KEY_A:
+        keyboard_joystick->setKey(KeyboardKey::kA, pressed);
+        break;
+      case GLFW_KEY_D:
+        keyboard_joystick->setKey(KeyboardKey::kD, pressed);
+        break;
+      default:
+        break;
+    }
+  }
+
   if (act==GLFW_PRESS)
   {
     if(param::config.enable_elastic_band == 1) {
       if (key==GLFW_KEY_9) {
         elastic_band.enable_ = !elastic_band.enable_;
-      } else if (key==GLFW_KEY_7 || key==GLFW_KEY_UP) {
+      } else if (key==GLFW_KEY_7 ||
+                 (key==GLFW_KEY_UP &&
+                  param::config.joystick_type != "keyboard")) {
         elastic_band.length_ -= 0.1;
-      } else if (key==GLFW_KEY_8 || key==GLFW_KEY_DOWN) {
+      } else if (key==GLFW_KEY_8 ||
+                 (key==GLFW_KEY_DOWN &&
+                  param::config.joystick_type != "keyboard")) {
         elastic_band.length_ += 0.1;
       }
     }
@@ -661,6 +747,13 @@ void user_key_cb(GLFWwindow* window, int key, int scancode, int act, int mods) {
       mj_resetData(m, d);
       mj_forward(m, d);
     }
+  }
+}
+
+void user_focus_cb(GLFWwindow* window, int focused) {
+  if (!focused && param::config.use_joystick == 1 &&
+      param::config.joystick_type == "keyboard") {
+    keyboard_joystick->releaseAll();
   }
 }
 
@@ -722,6 +815,9 @@ int main(int argc, char **argv)
   std::thread physicsthreadhandle(&PhysicsThread, sim.get(), param::config.robot_scene.c_str());
   // start simulation UI loop (blocking call)
   glfwSetKeyCallback(static_cast<mj::GlfwAdapter*>(sim->platform_ui.get())->window_,user_key_cb);
+  glfwSetWindowFocusCallback(
+    static_cast<mj::GlfwAdapter*>(sim->platform_ui.get())->window_,
+    user_focus_cb);
   sim->RenderLoop();
   physicsthreadhandle.join();
 

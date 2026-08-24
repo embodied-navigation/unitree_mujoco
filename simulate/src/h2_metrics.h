@@ -3,6 +3,9 @@
 #include <cmath>
 #include <filesystem>
 #include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 #include <mujoco/mujoco.h>
@@ -61,4 +64,39 @@ private:
   }
 
   std::ofstream output_;
+};
+
+class H2HeightLogger
+{
+public:
+  void record(const mjModel* model, const mjData* data)
+  {
+    if (model_ != model)
+    {
+      model_ = model;
+      pelvis_body_id_ = mj_name2id(model, mjOBJ_BODY, "pelvis");
+      torso_body_id_ = mj_name2id(model, mjOBJ_BODY, "torso_link");
+      next_log_time_ = 0.0;
+    }
+    if (pelvis_body_id_ < 0 || data->time < next_log_time_) return;
+
+    constexpr double kLogIntervalSeconds = 1.0;
+    next_log_time_ = data->time + kLogIntervalSeconds;
+
+    std::ostringstream output;
+    output << std::fixed << std::setprecision(4)
+           << "[H2-HEIGHT] time=" << data->time
+           << " root_z=" << data->xpos[3 * pelvis_body_id_ + 2];
+    if (torso_body_id_ >= 0)
+    {
+      output << " torso_z=" << data->xpos[3 * torso_body_id_ + 2];
+    }
+    std::cout << output.str() << std::endl;
+  }
+
+private:
+  const mjModel* model_ = nullptr;
+  int pelvis_body_id_ = -1;
+  int torso_body_id_ = -1;
+  double next_log_time_ = 0.0;
 };
