@@ -21,6 +21,8 @@ enum class KeyboardKey : std::size_t
     kS,
     kA,
     kD,
+    kQ,
+    kE,
     kCount,
 };
 
@@ -60,14 +62,24 @@ public:
         right(pressed(KeyboardKey::kRight));
         X(pressed(KeyboardKey::kX));
         Y(pressed(KeyboardKey::kY));
-        constexpr float kCommandSpeed = 0.5F;
-        lx(0.0F);
-        ly(kCommandSpeed *
+        // A is normally the keyboard left-strafe command. While either FSM
+        // modifier is held it acts as the gamepad A button instead, enabling
+        // both RT+A and RB+A transitions without injecting a yaw command.
+        const bool a_is_button =
+            (pressed(KeyboardKey::kRT) || pressed(KeyboardKey::kRB)) &&
+            pressed(KeyboardKey::kA);
+        A(a_is_button);
+        constexpr float kLinearCommandSpeed = 0.5F;
+        constexpr float kYawCommandSpeed = 1.0F;
+        lx(kLinearCommandSpeed *
+           (static_cast<float>(pressed(KeyboardKey::kD)) -
+            static_cast<float>(pressed(KeyboardKey::kA) && !a_is_button)));
+        ly(kLinearCommandSpeed *
            (static_cast<float>(pressed(KeyboardKey::kW)) -
             static_cast<float>(pressed(KeyboardKey::kS))));
-        rx(kCommandSpeed *
-           (static_cast<float>(pressed(KeyboardKey::kD)) -
-            static_cast<float>(pressed(KeyboardKey::kA))));
+        rx(kYawCommandSpeed *
+           (static_cast<float>(pressed(KeyboardKey::kE)) -
+            static_cast<float>(pressed(KeyboardKey::kQ))));
         ry(0.0F);
     }
 

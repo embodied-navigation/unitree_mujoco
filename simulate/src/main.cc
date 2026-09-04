@@ -723,6 +723,12 @@ void user_key_cb(GLFWwindow* window, int key, int scancode, int act, int mods) {
       case GLFW_KEY_D:
         keyboard_joystick->setKey(KeyboardKey::kD, pressed);
         break;
+      case GLFW_KEY_Q:
+        keyboard_joystick->setKey(KeyboardKey::kQ, pressed);
+        break;
+      case GLFW_KEY_E:
+        keyboard_joystick->setKey(KeyboardKey::kE, pressed);
+        break;
       default:
         break;
     }
