@@ -23,6 +23,14 @@ int main()
     assert(remote.RF_RX.btn.components.R2 == 1);
     assert(remote.RF_RX.btn.components.Y == 1);
 
+    joystick.setKey(KeyboardKey::kY, false);
+    joystick.setKey(KeyboardKey::kA, true);
+    joystick.update();
+    remote = joystick.combine();
+    assert(remote.RF_RX.btn.components.R2 == 1);
+    assert(remote.RF_RX.btn.components.A == 1);
+    assert(remote.RF_RX.rx == 0.0F);
+
     joystick.releaseAll();
     joystick.setKey(KeyboardKey::kRB, true);
     joystick.setKey(KeyboardKey::kX, true);
@@ -30,6 +38,14 @@ int main()
     remote = joystick.combine();
     assert(remote.RF_RX.btn.components.R1 == 1);
     assert(remote.RF_RX.btn.components.X == 1);
+
+    joystick.setKey(KeyboardKey::kX, false);
+    joystick.setKey(KeyboardKey::kA, true);
+    joystick.update();
+    remote = joystick.combine();
+    assert(remote.RF_RX.btn.components.R1 == 1);
+    assert(remote.RF_RX.btn.components.A == 1);
+    assert(remote.RF_RX.rx == 0.0F);
 
     joystick.releaseAll();
     joystick.update();
@@ -40,12 +56,25 @@ int main()
     assert(remote.RF_RX.rx == 0.0F);
     assert(remote.RF_RX.ry == 0.0F);
 
+    joystick.setKey(KeyboardKey::kQ, true);
+    joystick.update();
+    remote = joystick.combine();
+    assert(remote.RF_RX.rx == -1.0F);
+
+    joystick.releaseAll();
+    joystick.setKey(KeyboardKey::kE, true);
+    joystick.update();
+    remote = joystick.combine();
+    assert(remote.RF_RX.rx == 1.0F);
+
+    joystick.releaseAll();
     joystick.setKey(KeyboardKey::kW, true);
     joystick.setKey(KeyboardKey::kA, true);
     joystick.update();
     remote = joystick.combine();
     assert(remote.RF_RX.ly == 0.5F);
-    assert(remote.RF_RX.rx == -0.5F);
+    assert(remote.RF_RX.lx == -0.5F);
+    assert(remote.RF_RX.btn.components.A == 0);
 
     joystick.releaseAll();
     joystick.setKey(KeyboardKey::kS, true);
@@ -53,12 +82,12 @@ int main()
     joystick.update();
     remote = joystick.combine();
     assert(remote.RF_RX.ly == -0.5F);
-    assert(remote.RF_RX.rx == 0.5F);
+    assert(remote.RF_RX.lx == 0.5F);
 
     joystick.setKey(KeyboardKey::kW, true);
     joystick.setKey(KeyboardKey::kA, true);
     joystick.update();
     remote = joystick.combine();
     assert(remote.RF_RX.ly == 0.0F);
-    assert(remote.RF_RX.rx == 0.0F);
+    assert(remote.RF_RX.lx == 0.0F);
 }

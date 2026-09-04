@@ -9,7 +9,7 @@ joystick_type: "keyboard" # support "keyboard", "xbox", and "switch"
 joystick_device: "/dev/input/js0" # Device path; ignored for keyboard
 joystick_bits: 16 # Some game controllers may only have 8-bit accuracy
 # Keyboard: Left Shift=L2, Right Shift=R2, Right Ctrl=R1,
-# arrows=D-pad, X=X, Y=Y.
+# arrows=D-pad, W/S=forward/backward, A/D=lateral, Q/E=yaw, X=X, Y=Y.
 
 print_scene_information: 1 # Set to 1 when diagnosing model mappings
 
